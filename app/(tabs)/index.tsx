@@ -4,11 +4,10 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  ImageBackground,
-  Image,
   StyleSheet,
   Platform,
 } from "react-native";
+import { Image, ImageBackground } from "expo-image";
 import { useRouter } from "expo-router";
 import type { Href } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -17,7 +16,8 @@ import { ScreenContainer } from "@/components/screen-container";
 import { CircularProgress } from "@/components/circular-progress";
 import { WORKOUTS, WEEK_DAYS, STATS, DEFAULT_GOAL, type Goal } from "@/lib/data";
 
-const GYM_BG = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80";
+const GYM_BG = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=60";
+const MOTIVATION_BG = "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=60";
 
 const OBJECTIVES_LABEL: Record<string, string> = {
   perder: "Emagrecimento",
@@ -97,6 +97,8 @@ export default function HomeScreen() {
             source={{ uri: GYM_BG }}
             style={styles.workoutBg}
             imageStyle={styles.workoutBgImage}
+            transition={200}
+            cachePolicy="memory-disk"
           >
             <View style={styles.workoutOverlay}>
               <Text style={styles.todayLabel}>TREINO DE HOJE</Text>
@@ -180,9 +182,11 @@ export default function HomeScreen() {
         {/* Motivation Card */}
         <View style={styles.motivationCard}>
           <ImageBackground
-            source={{ uri: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80" }}
+            source={{ uri: MOTIVATION_BG }}
             style={styles.motivationBg}
             imageStyle={styles.motivationBgImage}
+            transition={200}
+            cachePolicy="memory-disk"
           >
             <View style={styles.motivationOverlay}>
               <View style={styles.motivationRow}>
