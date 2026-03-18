@@ -31,7 +31,11 @@ export default function TreinoScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Meus Treinos</Text>
-        <TouchableOpacity style={styles.addButton} activeOpacity={0.7}>
+        <TouchableOpacity 
+          style={styles.addButton} 
+          activeOpacity={0.7}
+          onPress={() => router.push("/create-workout" as Href)}
+        >
           <MaterialIcons name="add" size={22} color="#000000" />
         </TouchableOpacity>
       </View>

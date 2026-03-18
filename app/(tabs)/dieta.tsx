@@ -44,7 +44,11 @@ export default function DietaScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Dieta de Hoje</Text>
-        <TouchableOpacity style={styles.editButton} activeOpacity={0.7}>
+        <TouchableOpacity 
+          style={styles.editButton} 
+          activeOpacity={0.7}
+          onPress={() => router.push("/create-diet" as any)}
+        >
           <MaterialIcons name="edit" size={18} color="#22C55E" />
         </TouchableOpacity>
       </View>

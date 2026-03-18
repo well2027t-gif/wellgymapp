@@ -62,7 +62,14 @@ export default function PerfilScreen() {
 
   const handlePickPhoto = async () => {
     if (Platform.OS === "web") {
-      Alert.alert("Foto", "Selecione uma foto no dispositivo móvel.");
+      // No web, vamos simular o seletor de arquivos ou usar uma imagem padrão para demonstração
+      const demoPhotos = [
+        "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80",
+        "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=80",
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80"
+      ];
+      const randomPhoto = demoPhotos[Math.floor(Math.random() * demoPhotos.length)];
+      setPhoto(randomPhoto);
       return;
     }
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -384,6 +391,30 @@ export default function PerfilScreen() {
               />
             </View>
           </View>
+        </View>
+
+        {/* Fotos de Evolução */}
+        <View style={styles.section}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <Text style={[styles.sectionTitle, { color: textMuted, marginBottom: 0 }]}>Fotos de Evolução</Text>
+            <TouchableOpacity onPress={handlePickPhoto} activeOpacity={0.7}>
+              <Text style={{ fontSize: 12, color: accent, fontWeight: "700" }}>ADICIONAR</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+            <View style={{ width: 100, height: 130, borderRadius: 12, backgroundColor: cardBg, borderColor, borderWidth: 1, borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
+              <MaterialIcons name="add-a-photo" size={24} color={textMuted} />
+              <Text style={{ fontSize: 10, color: textMuted, marginTop: 4 }}>Antes</Text>
+            </View>
+            <View style={{ width: 100, height: 130, borderRadius: 12, backgroundColor: cardBg, borderColor, borderWidth: 1, borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
+              <MaterialIcons name="add-a-photo" size={24} color={textMuted} />
+              <Text style={{ fontSize: 10, color: textMuted, marginTop: 4 }}>Depois</Text>
+            </View>
+            <View style={{ width: 100, height: 130, borderRadius: 12, backgroundColor: cardBg, borderColor, borderWidth: 1, borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
+              <MaterialIcons name="history" size={24} color={textMuted} />
+              <Text style={{ fontSize: 10, color: textMuted, marginTop: 4 }}>Histórico</Text>
+            </View>
+          </ScrollView>
         </View>
 
         {/* Conta */}
