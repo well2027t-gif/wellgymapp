@@ -2,7 +2,7 @@ import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Platform, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useColors } from "@/hooks/use-colors";
+import { useColors } from "../../hooks/use-colors";
 
 export default function TabLayout() {
   const colors = useColors();
