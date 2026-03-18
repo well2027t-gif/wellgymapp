@@ -393,28 +393,23 @@ export default function PerfilScreen() {
           </View>
         </View>
 
-        {/* Fotos de Evolução */}
+        {/* Minha Evolução - Botão Premium */}
         <View style={styles.section}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <Text style={[styles.sectionTitle, { color: textMuted, marginBottom: 0 }]}>Fotos de Evolução</Text>
-            <TouchableOpacity onPress={handlePickPhoto} activeOpacity={0.7}>
-              <Text style={{ fontSize: 12, color: accent, fontWeight: "700" }}>ADICIONAR</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
-            <View style={{ width: 100, height: 130, borderRadius: 12, backgroundColor: cardBg, borderColor, borderWidth: 1, borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
-              <MaterialIcons name="add-a-photo" size={24} color={textMuted} />
-              <Text style={{ fontSize: 10, color: textMuted, marginTop: 4 }}>Antes</Text>
+          <Text style={[styles.sectionTitle, { color: textMuted }]}>Minha Evolução</Text>
+          <TouchableOpacity 
+            style={[styles.card, { backgroundColor: cardBg, borderColor, padding: 16, flexDirection: "row", alignItems: "center", gap: 16 }]} 
+            activeOpacity={0.8}
+            onPress={() => router.push("/evolucao" as any)}
+          >
+            <View style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: "rgba(34,197,94,0.1)", alignItems: "center", justifyContent: "center" }}>
+              <MaterialIcons name="photo-library" size={24} color={accent} />
             </View>
-            <View style={{ width: 100, height: 130, borderRadius: 12, backgroundColor: cardBg, borderColor, borderWidth: 1, borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
-              <MaterialIcons name="add-a-photo" size={24} color={textMuted} />
-              <Text style={{ fontSize: 10, color: textMuted, marginTop: 4 }}>Depois</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: textPrimary }}>Diário Visual</Text>
+              <Text style={{ fontSize: 13, color: textMuted }}>Acompanhe seu progresso em fotos</Text>
             </View>
-            <View style={{ width: 100, height: 130, borderRadius: 12, backgroundColor: cardBg, borderColor, borderWidth: 1, borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
-              <MaterialIcons name="history" size={24} color={textMuted} />
-              <Text style={{ fontSize: 10, color: textMuted, marginTop: 4 }}>Histórico</Text>
-            </View>
-          </ScrollView>
+            <MaterialIcons name="chevron-right" size={24} color={textMuted} />
+          </TouchableOpacity>
         </View>
 
         {/* Conta */}
