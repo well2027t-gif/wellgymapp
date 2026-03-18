@@ -52,6 +52,7 @@ export function ScreenContainer({
       className={cn(
         "flex-1",
         "bg-background",
+        "mx-auto w-full max-w-[480px]",
         containerClassName
       )}
       {...props}
