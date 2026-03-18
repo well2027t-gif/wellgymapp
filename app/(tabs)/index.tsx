@@ -208,7 +208,7 @@ export default function HomeScreen() {
           {/* Left: Photo */}
           <TouchableOpacity
             style={styles.profilePhotoContainer}
-            onPress={handlePickPhoto}
+            onPress={() => router.push("/perfil" as Href)}
             activeOpacity={0.8}
           >
             {profilePhoto ? (

@@ -7,10 +7,12 @@ import {
   TextInput,
   StyleSheet,
   Alert,
+  FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { ScreenContainer } from "@/components/screen-container";
+import { PREDEFINED_EXERCISES } from "@/lib/data";
 
 interface ExerciseInput {
   id: string;
@@ -25,6 +27,8 @@ export default function CreateWorkoutScreen() {
   const [exercises, setExercises] = useState<ExerciseInput[]>([
     { id: "1", name: "", sets: "", reps: "" },
   ]);
+  const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const addExercise = () => {
     setExercises([
@@ -45,6 +49,14 @@ export default function CreateWorkoutScreen() {
     );
   };
 
+  const handleSelectExercise = (exerciseName: string) => {
+    if (activeExerciseId) {
+      updateExercise(activeExerciseId, "name", exerciseName);
+      setActiveExerciseId(null);
+      setSearchQuery("");
+    }
+  };
+
   const handleSave = () => {
     if (!workoutName.trim()) {
       Alert.alert("Erro", "Por favor, insira o nome do treino.");
@@ -53,6 +65,10 @@ export default function CreateWorkoutScreen() {
     Alert.alert("Sucesso", "Treino criado com sucesso!");
     router.back();
   };
+
+  const filteredExercises = PREDEFINED_EXERCISES.filter(ex => 
+    ex.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <ScreenContainer containerClassName="bg-background" safeAreaClassName="bg-background">
@@ -88,13 +104,18 @@ export default function CreateWorkoutScreen() {
               </TouchableOpacity>
             </View>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Nome do exercício"
-              placeholderTextColor="#6B7280"
-              value={ex.name}
-              onChangeText={(v) => updateExercise(ex.id, "name", v)}
-            />
+            <TouchableOpacity 
+              style={styles.exercisePicker} 
+              onPress={() => {
+                setActiveExerciseId(ex.id);
+                setSearchQuery(ex.name);
+              }}
+            >
+              <Text style={[styles.exercisePickerText, !ex.name && { color: "#6B7280" }]}>
+                {ex.name || "Selecionar exercício..."}
+              </Text>
+              <MaterialIcons name="search" size={20} color="#22C55E" />
+            </TouchableOpacity>
 
             <View style={styles.row}>
               <View style={styles.inputHalf}>
@@ -127,6 +148,42 @@ export default function CreateWorkoutScreen() {
           <Text style={styles.addExerciseText}>ADICIONAR EXERCÍCIO</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Exercise Selection Modal (Simulated) */}
+      {activeExerciseId && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Buscar Exercício</Text>
+              <TouchableOpacity onPress={() => setActiveExerciseId(null)}>
+                <MaterialIcons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.modalSearch}
+              placeholder="Digite o nome do exercício..."
+              placeholderTextColor="#6B7280"
+              autoFocus
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            <FlatList
+              data={filteredExercises}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  style={styles.exerciseItem} 
+                  onPress={() => handleSelectExercise(item)}
+                >
+                  <Text style={styles.exerciseItemText}>{item}</Text>
+                  <MaterialIcons name="add-circle-outline" size={20} color="#22C55E" />
+                </TouchableOpacity>
+              )}
+              style={styles.exerciseList}
+            />
+          </View>
+        </View>
+      )}
     </ScreenContainer>
   );
 }
@@ -221,6 +278,20 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#22C55E",
   },
+  exercisePicker: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#0D0D0D",
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#2A2A2A",
+  },
+  exercisePickerText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+  },
   row: {
     flexDirection: "row",
     gap: 12,
@@ -255,5 +326,56 @@ const styles = StyleSheet.create({
     color: "#22C55E",
     letterSpacing: 0.5,
   },
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.85)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#1A1A1A",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    height: "80%",
+    padding: 20,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#FFFFFF",
+  },
+  modalSearch: {
+    backgroundColor: "#0D0D0D",
+    borderRadius: 14,
+    padding: 16,
+    color: "#FFFFFF",
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#2A2A2A",
+    marginBottom: 16,
+  },
+  exerciseList: {
+    flex: 1,
+  },
+  exerciseItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#2A2A2A",
+  },
+  exerciseItemText: {
+    fontSize: 16,
+    color: "#D1D5DB",
+  },
 });
-

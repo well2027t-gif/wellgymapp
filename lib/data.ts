@@ -333,3 +333,18 @@ export const STATS = {
   betterThanPercent: 82,
   weeklyImprovement: 12,
 };
+
+export const PREDEFINED_EXERCISES = [
+  // Peito
+  "Supino Reto (Barra)", "Supino Inclinado (Halteres)", "Supino Declinado", "Crucifixo Reto", "Crucifixo Inclinado", "Crossover", "Peck Deck (Voador)", "Flexão de Braços",
+  // Costas
+  "Puxada Frontal", "Remada Curvada", "Remada Baixa", "Remada Cavalinho", "Puxada com Triângulo", "Barra Fixa", "Levantamento Terra", "Serrote (Remada Unilateral)",
+  // Pernas
+  "Agachamento Livre", "Leg Press 45°", "Extensora", "Flexora", "Stiff", "Afundo/Passada", "Cadeira Abdutora", "Cadeira Adutora", "Panturrilha em Pé", "Panturrilha Sentado",
+  // Ombros
+  "Desenvolvimento com Halteres", "Desenvolvimento Arnold", "Elevação Lateral", "Elevação Frontal", "Remada Alta", "Encolhimento", "Crucifixo Inverso",
+  // Braços (Bíceps e Tríceps)
+  "Rosca Direta (Barra W)", "Rosca Alternada", "Rosca Concentrada", "Rosca Martelo", "Tríceps Pulley", "Tríceps Corda", "Tríceps Testa", "Tríceps Francês", "Mergulho no Banco",
+  // Abdômen e Cardio
+  "Abdominal Supra", "Abdominal Infra", "Prancha Isométrica", "Bicicleta", "Corrida (Esteira)", "Elíptico", "Corda", "Burpee"
+];
