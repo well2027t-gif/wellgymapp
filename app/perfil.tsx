@@ -4,304 +4,205 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Image,
-  TextInput,
   StyleSheet,
+  Switch,
+  TextInput,
   Alert,
   Platform,
-  Switch,
 } from "react-native";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { ScreenContainer } from "@/components/screen-container";
-import { useThemeContext } from "@/lib/theme-provider";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { DEFAULT_GOAL } from "@/lib/data";
-
-const OBJECTIVES = [
-  { key: "perder", label: "Emagrecimento", icon: "trending-down" },
-  { key: "massa", label: "Ganhar Massa", icon: "fitness-center" },
-  { key: "definicao", label: "Definição", icon: "star" },
-  { key: "manutencao", label: "Manutenção", icon: "balance" },
-  { key: "saude", label: "Saúde Geral", icon: "favorite" },
-  { key: "performance", label: "Performance", icon: "speed" },
-];
+import { LinearGradient } from "expo-linear-gradient";
 
 const ACTIVITY_LEVELS = [
-  { key: "sedentario", label: "Sedentário", desc: "Pouco ou nenhum exercício" },
-  { key: "leve", label: "Levemente ativo", desc: "1-3 dias/semana" },
-  { key: "moderado", label: "Moderadamente ativo", desc: "3-5 dias/semana" },
-  { key: "intenso", label: "Muito ativo", desc: "6-7 dias/semana" },
-  { key: "atleta", label: "Atleta", desc: "2x por dia" },
+  { key: "sedentary", label: "Sedentário", desc: "Pouco ou nenhum exercício" },
+  { key: "light", label: "Leve", desc: "Exercício 1-3 dias/semana" },
+  { key: "moderate", label: "Moderado", desc: "Exercício 3-5 dias/semana" },
+  { key: "active", label: "Ativo", desc: "Exercício diário intenso" },
+];
+
+const OBJECTIVES = [
+  { key: "perder", label: "Emagrecer", icon: "trending-down" },
+  { key: "massa", label: "Ganhar Massa", icon: "fitness-center" },
+  { key: "definicao", label: "Definição", icon: "visibility" },
 ];
 
 export default function PerfilScreen() {
   const router = useRouter();
-  const { colorScheme, setColorScheme } = useThemeContext();
+  const { colorScheme, setColorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
 
-  const [photo, setPhoto] = useState<string | null>(null);
   const [name, setName] = useState("Atleta");
-  const [editingName, setEditingName] = useState(false);
-  const [age, setAge] = useState("28");
-  const [height, setHeight] = useState("175");
-  const [currentWeight, setCurrentWeight] = useState(String(DEFAULT_GOAL.currentWeight));
-  const [goalWeight, setGoalWeight] = useState(String(DEFAULT_GOAL.goalWeight));
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [currentWeight, setCurrentWeight] = useState(DEFAULT_GOAL.currentWeight.toString());
+  const [goalWeight, setGoalWeight] = useState(DEFAULT_GOAL.goalWeight.toString());
+  const [activityLevel, setActivityLevel] = useState("moderate");
   const [objective, setObjective] = useState("perder");
-  const [activityLevel, setActivityLevel] = useState("moderado");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [reminderEnabled, setReminderEnabled] = useState(true);
 
-  // Derived colors based on current theme
-  const bg = isDark ? "#0D0D0D" : "#F5F5F5";
-  const cardBg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const textPrimary = isDark ? "#FFFFFF" : "#111111";
-  const textMuted = isDark ? "#9CA3AF" : "#6B7280";
-  const borderColor = isDark ? "#2A2A2A" : "#E5E7EB";
-  const accent = isDark ? "#22C55E" : "#16A34A";
+  const textPrimary = "#FFFFFF";
+  const textMuted = "#9CA3AF";
+  const accent = "#22C55E";
+  const cardBg = "#111111";
+  const borderColor = "#1A1A1A";
 
   const handlePickPhoto = async () => {
     if (Platform.OS === "web") {
-      // No web, vamos simular o seletor de arquivos ou usar uma imagem padrão para demonstração
       const demoPhotos = [
         "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80",
-        "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=80",
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80"
+        "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=80"
       ];
-      const randomPhoto = demoPhotos[Math.floor(Math.random() * demoPhotos.length)];
-      setPhoto(randomPhoto);
+      setPhoto(demoPhotos[Math.floor(Math.random() * demoPhotos.length)]);
       return;
     }
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permissão necessária", "Precisamos de acesso à galeria para alterar sua foto.");
-      return;
-    }
+    if (status !== "granted") return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.85,
+      quality: 0.8,
     });
-    if (!result.canceled && result.assets[0]) {
-      setPhoto(result.assets[0].uri);
-    }
+    if (!result.canceled && result.assets[0]) setPhoto(result.assets[0].uri);
   };
 
   const handleSave = () => {
-    Alert.alert("Perfil salvo!", "Suas informações foram atualizadas com sucesso.");
-  };
-
-  const imc =
-    height && currentWeight
-      ? (Number(currentWeight) / Math.pow(Number(height) / 100, 2)).toFixed(1)
-      : "--";
-
-  const imcLabel = () => {
-    const v = Number(imc);
-    if (isNaN(v)) return "";
-    if (v < 18.5) return "Abaixo do peso";
-    if (v < 25) return "Peso normal";
-    if (v < 30) return "Sobrepeso";
-    return "Obesidade";
-  };
-
-  const imcColor = () => {
-    const v = Number(imc);
-    if (isNaN(v)) return textMuted;
-    if (v < 18.5) return "#3B82F6";
-    if (v < 25) return accent;
-    if (v < 30) return "#F59E0B";
-    return "#EF4444";
+    Alert.alert("Sucesso", "Perfil atualizado com sucesso!");
   };
 
   return (
-    <ScreenContainer
-      containerClassName={isDark ? "bg-[#0D0D0D]" : "bg-[#F5F5F5]"}
-      safeAreaClassName={isDark ? "bg-[#0D0D0D]" : "bg-[#F5F5F5]"}
-    >
-      <ScrollView
-        style={[styles.scroll, { backgroundColor: bg }]}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Header */}
+    <ScreenContainer containerClassName="bg-[#050505]" safeAreaClassName="bg-[#050505]">
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        
+        {/* Header Premium */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: cardBg, borderColor }]} activeOpacity={0.7}>
-            <MaterialIcons name="arrow-back" size={24} color={textPrimary} />
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textPrimary }]}>Meu Perfil</Text>
-          <TouchableOpacity onPress={handleSave} style={[styles.saveBtn, { borderColor: accent }]} activeOpacity={0.8}>
-            <Text style={[styles.saveBtnText, { color: accent }]}>Salvar</Text>
+          <Text style={styles.headerTitle}>Meu Perfil</Text>
+          <TouchableOpacity onPress={handleSave} style={styles.saveHeaderBtn}>
+            <Text style={styles.saveHeaderText}>Salvar</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Photo + Name */}
-        <View style={styles.photoSection}>
-          <TouchableOpacity onPress={handlePickPhoto} activeOpacity={0.85} style={styles.photoWrapper}>
-            {photo ? (
-              <Image source={{ uri: photo }} style={[styles.photo, { borderColor: accent }]} />
-            ) : (
-              <View style={[styles.photoPlaceholder, { backgroundColor: cardBg, borderColor }]}>
-                <MaterialIcons name="person" size={52} color={textMuted} />
+        {/* Profile Card de Luxo */}
+        <View style={styles.profileSection}>
+          <TouchableOpacity style={styles.photoContainer} onPress={handlePickPhoto} activeOpacity={0.9}>
+            <LinearGradient colors={["#22C55E", "#16A34A"]} style={styles.photoGlow} />
+            <View style={styles.photoInner}>
+              {photo ? (
+                <Image source={{ uri: photo }} style={styles.photo} />
+              ) : (
+                <View style={styles.photoPlaceholder}>
+                  <Ionicons name="person" size={40} color="#22C55E" />
+                </View>
+              )}
+              <View style={styles.editBadge}>
+                <MaterialIcons name="camera-alt" size={14} color="#000000" />
               </View>
-            )}
-            <View style={[styles.photoBadge, { backgroundColor: accent }]}>
-              <MaterialIcons name="camera-alt" size={16} color="#000" />
             </View>
           </TouchableOpacity>
-
-          {editingName ? (
-            <TextInput
-              style={[styles.nameInput, { color: textPrimary, borderBottomColor: accent }]}
-              value={name}
-              onChangeText={setName}
-              autoFocus
-              onBlur={() => setEditingName(false)}
-              onSubmitEditing={() => setEditingName(false)}
-              returnKeyType="done"
-              maxLength={30}
-              placeholderTextColor={textMuted}
-            />
-          ) : (
-            <TouchableOpacity onPress={() => setEditingName(true)} activeOpacity={0.7} style={styles.nameRow}>
-              <Text style={[styles.nameText, { color: textPrimary }]}>{name}</Text>
-              <MaterialIcons name="edit" size={16} color={accent} />
-            </TouchableOpacity>
-          )}
-          <Text style={[styles.memberSince, { color: textMuted }]}>Membro desde Jan 2025</Text>
+          
+          <TextInput
+            style={styles.nameInput}
+            value={name}
+            onChangeText={setName}
+            placeholder="Seu Nome"
+            placeholderTextColor={textMuted}
+          />
+          <Text style={styles.statusText}>Membro Premium • Nível 4</Text>
         </View>
 
-        {/* IMC Card */}
-        <View style={[styles.imcCard, { backgroundColor: cardBg, borderColor }]}>
-          <View style={styles.imcItem}>
-            <Text style={[styles.imcValue, { color: textPrimary }]}>{currentWeight} kg</Text>
-            <Text style={[styles.imcLabel, { color: textMuted }]}>Peso atual</Text>
-          </View>
-          <View style={[styles.imcDivider, { backgroundColor: borderColor }]} />
-          <View style={styles.imcItem}>
-            <Text style={[styles.imcValue, { color: imcColor() }]}>{imc}</Text>
-            <Text style={[styles.imcLabel, { color: textMuted }]}>IMC</Text>
-          </View>
-          <View style={[styles.imcDivider, { backgroundColor: borderColor }]} />
-          <View style={styles.imcItem}>
-            <Text style={[styles.imcValue, { color: imcColor(), fontSize: 13 }]}>{imcLabel()}</Text>
-            <Text style={[styles.imcLabel, { color: textMuted }]}>Classificação</Text>
-          </View>
-        </View>
-
-        {/* Dados Pessoais */}
+        {/* Minha Evolução - Banner Elite */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textMuted }]}>Dados Pessoais</Text>
-          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
-            <View style={styles.inputRow}>
-              <MaterialIcons name="person" size={20} color={accent} />
-              <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: textMuted }]}>Nome completo</Text>
-                <TextInput
-                  style={[styles.inputField, { color: textPrimary }]}
-                  value={name}
-                  onChangeText={setName}
-                  placeholderTextColor={textMuted}
-                  returnKeyType="done"
-                />
+          <Text style={styles.sectionTitle}>TRANSFORMAÇÃO</Text>
+          <TouchableOpacity 
+            activeOpacity={0.9}
+            onPress={() => router.push("/evolucao" as any)}
+            style={styles.evolutionBanner}
+          >
+            <LinearGradient
+              colors={["rgba(34,197,94,0.2)", "rgba(5,5,5,0.8)"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.evolutionGradient}
+            >
+              <View style={styles.evolutionInfo}>
+                <View style={styles.evolutionIcon}>
+                  <Ionicons name="stats-chart" size={24} color="#22C55E" />
+                </View>
+                <View>
+                  <Text style={styles.evolutionTitle}>Diário de Evolução</Text>
+                  <Text style={styles.evolutionSub}>6 fotos • Última há 2 dias</Text>
+                </View>
               </View>
-            </View>
-            <View style={[styles.separator, { backgroundColor: borderColor }]} />
-            <View style={styles.inputRow}>
-              <MaterialIcons name="cake" size={20} color={accent} />
-              <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: textMuted }]}>Idade</Text>
-                <TextInput
-                  style={[styles.inputField, { color: textPrimary }]}
-                  value={age}
-                  onChangeText={setAge}
-                  keyboardType="numeric"
-                  placeholderTextColor={textMuted}
-                  returnKeyType="done"
-                  maxLength={3}
-                />
+              <View style={styles.evolutionAction}>
+                <Text style={styles.evolutionActionText}>VER TUDO</Text>
+                <Ionicons name="arrow-forward" size={16} color="#22C55E" />
               </View>
-            </View>
-            <View style={[styles.separator, { backgroundColor: borderColor }]} />
-            <View style={styles.inputRow}>
-              <MaterialIcons name="height" size={20} color={accent} />
-              <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: textMuted }]}>Altura (cm)</Text>
-                <TextInput
-                  style={[styles.inputField, { color: textPrimary }]}
-                  value={height}
-                  onChangeText={setHeight}
-                  keyboardType="numeric"
-                  placeholderTextColor={textMuted}
-                  returnKeyType="done"
-                  maxLength={3}
-                />
-              </View>
-            </View>
-          </View>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
 
-        {/* Metas de Peso */}
+        {/* Métricas Físicas */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textMuted }]}>Metas de Peso</Text>
-          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
-            <View style={styles.inputRow}>
-              <MaterialIcons name="monitor-weight" size={20} color="#3B82F6" />
-              <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: textMuted }]}>Peso atual (kg)</Text>
+          <Text style={styles.sectionTitle}>MÉTRICAS ATUAIS</Text>
+          <View style={styles.metricsGrid}>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>PESO ATUAL</Text>
+              <View style={styles.metricInputRow}>
                 <TextInput
-                  style={[styles.inputField, { color: textPrimary }]}
+                  style={styles.metricInput}
                   value={currentWeight}
                   onChangeText={setCurrentWeight}
-                  keyboardType="decimal-pad"
-                  placeholderTextColor={textMuted}
-                  returnKeyType="done"
-                  maxLength={5}
+                  keyboardType="numeric"
                 />
+                <Text style={styles.metricUnit}>kg</Text>
               </View>
             </View>
-            <View style={[styles.separator, { backgroundColor: borderColor }]} />
-            <View style={styles.inputRow}>
-              <MaterialIcons name="flag" size={20} color={accent} />
-              <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: textMuted }]}>Peso meta (kg)</Text>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>PESO META</Text>
+              <View style={styles.metricInputRow}>
                 <TextInput
-                  style={[styles.inputField, { color: textPrimary }]}
+                  style={styles.metricInput}
                   value={goalWeight}
                   onChangeText={setGoalWeight}
-                  keyboardType="decimal-pad"
-                  placeholderTextColor={textMuted}
-                  returnKeyType="done"
-                  maxLength={5}
+                  keyboardType="numeric"
                 />
+                <Text style={[styles.metricUnit, { color: "#22C55E" }]}>kg</Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Objetivo */}
+        {/* Objetivos Glassmorphism */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textMuted }]}>Objetivo Principal</Text>
+          <Text style={styles.sectionTitle}>OBJETIVO</Text>
           <View style={styles.objectivesGrid}>
             {OBJECTIVES.map((obj) => (
               <TouchableOpacity
                 key={obj.key}
+                onPress={() => setObjective(obj.key)}
                 style={[
                   styles.objectiveCard,
-                  { backgroundColor: cardBg, borderColor: objective === obj.key ? accent : borderColor },
-                  objective === obj.key && { backgroundColor: isDark ? "rgba(34,197,94,0.08)" : "rgba(22,163,74,0.08)" },
+                  objective === obj.key && styles.objectiveCardActive
                 ]}
-                onPress={() => setObjective(obj.key)}
-                activeOpacity={0.8}
               >
-                <MaterialIcons
-                  name={obj.icon as any}
-                  size={22}
-                  color={objective === obj.key ? accent : textMuted}
+                <MaterialIcons 
+                  name={obj.icon as any} 
+                  size={24} 
+                  color={objective === obj.key ? "#000000" : "#22C55E"} 
                 />
-                <Text style={[styles.objectiveLabel, { color: objective === obj.key ? accent : textMuted }]}>
+                <Text style={[
+                  styles.objectiveText,
+                  objective === obj.key && styles.objectiveTextActive
+                ]}>
                   {obj.label}
                 </Text>
               </TouchableOpacity>
@@ -309,152 +210,41 @@ export default function PerfilScreen() {
           </View>
         </View>
 
-        {/* Nível de Atividade */}
+        {/* Configurações */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textMuted }]}>Nível de Atividade</Text>
-          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
-            {ACTIVITY_LEVELS.map((level, idx) => (
-              <React.Fragment key={level.key}>
-                <TouchableOpacity
-                  style={styles.activityRow}
-                  onPress={() => setActivityLevel(level.key)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.activityInfo}>
-                    <Text style={[styles.activityLabel, { color: activityLevel === level.key ? accent : textPrimary }]}>
-                      {level.label}
-                    </Text>
-                    <Text style={[styles.activityDesc, { color: textMuted }]}>{level.desc}</Text>
-                  </View>
-                  <View style={[styles.radioOuter, { borderColor: activityLevel === level.key ? accent : borderColor }]}>
-                    {activityLevel === level.key && <View style={[styles.radioInner, { backgroundColor: accent }]} />}
-                  </View>
-                </TouchableOpacity>
-                {idx < ACTIVITY_LEVELS.length - 1 && <View style={[styles.separator, { backgroundColor: borderColor }]} />}
-              </React.Fragment>
-            ))}
-          </View>
-        </View>
-
-        {/* Preferências */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textMuted }]}>Preferências</Text>
-          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
-            <View style={styles.toggleRow}>
-              <View style={styles.toggleInfo}>
-                <MaterialIcons name="notifications" size={20} color={accent} />
-                <View>
-                  <Text style={[styles.toggleLabel, { color: textPrimary }]}>Notificações</Text>
-                  <Text style={[styles.toggleDesc, { color: textMuted }]}>Lembretes de treino e dieta</Text>
-                </View>
+          <Text style={styles.sectionTitle}>PREFERÊNCIAS</Text>
+          <View style={styles.settingsCard}>
+            <View style={styles.settingRow}>
+              <View style={styles.settingInfo}>
+                <Ionicons name="notifications-outline" size={20} color="#D1D5DB" />
+                <Text style={styles.settingLabel}>Notificações</Text>
               </View>
               <Switch
                 value={notificationsEnabled}
                 onValueChange={setNotificationsEnabled}
-                trackColor={{ false: borderColor, true: isDark ? "rgba(34,197,94,0.4)" : "rgba(22,163,74,0.4)" }}
-                thumbColor={notificationsEnabled ? accent : textMuted}
+                trackColor={{ false: "#1A1A1A", true: "#22C55E" }}
               />
             </View>
-            <View style={[styles.separator, { backgroundColor: borderColor }]} />
-            <View style={styles.toggleRow}>
-              <View style={styles.toggleInfo}>
-                <MaterialIcons name="alarm" size={20} color="#F97316" />
-                <View>
-                  <Text style={[styles.toggleLabel, { color: textPrimary }]}>Lembrete diário</Text>
-                  <Text style={[styles.toggleDesc, { color: textMuted }]}>Notificação às 07:00</Text>
-                </View>
-              </View>
-              <Switch
-                value={reminderEnabled}
-                onValueChange={setReminderEnabled}
-                trackColor={{ false: borderColor, true: "rgba(249,115,22,0.4)" }}
-                thumbColor={reminderEnabled ? "#F97316" : textMuted}
-              />
-            </View>
-            <View style={[styles.separator, { backgroundColor: borderColor }]} />
-            {/* DARK MODE TOGGLE — conectado ao ThemeProvider */}
-            <View style={styles.toggleRow}>
-              <View style={styles.toggleInfo}>
-                <MaterialIcons name="dark-mode" size={20} color="#A855F7" />
-                <View>
-                  <Text style={[styles.toggleLabel, { color: textPrimary }]}>Modo escuro</Text>
-                  <Text style={[styles.toggleDesc, { color: textMuted }]}>
-                    {isDark ? "Tema dark ativado" : "Tema claro ativado"}
-                  </Text>
-                </View>
+            <View style={styles.divider} />
+            <View style={styles.settingRow}>
+              <View style={styles.settingInfo}>
+                <Ionicons name="moon-outline" size={20} color="#D1D5DB" />
+                <Text style={styles.settingLabel}>Modo Escuro</Text>
               </View>
               <Switch
                 value={isDark}
                 onValueChange={(val) => setColorScheme(val ? "dark" : "light")}
-                trackColor={{ false: borderColor, true: "rgba(168,85,247,0.4)" }}
-                thumbColor={isDark ? "#A855F7" : textMuted}
+                trackColor={{ false: "#1A1A1A", true: "#22C55E" }}
               />
             </View>
           </View>
         </View>
 
-        {/* Minha Evolução - Botão Premium */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textMuted }]}>Minha Evolução</Text>
-          <TouchableOpacity 
-            style={[styles.card, { backgroundColor: cardBg, borderColor, padding: 16, flexDirection: "row", alignItems: "center", gap: 16 }]} 
-            activeOpacity={0.8}
-            onPress={() => router.push("/evolucao" as any)}
-          >
-            <View style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: "rgba(34,197,94,0.1)", alignItems: "center", justifyContent: "center" }}>
-              <MaterialIcons name="photo-library" size={24} color={accent} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, fontWeight: "700", color: textPrimary }}>Diário Visual</Text>
-              <Text style={{ fontSize: 13, color: textMuted }}>Acompanhe seu progresso em fotos</Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color={textMuted} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Conta */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textMuted }]}>Conta</Text>
-          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
-            <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
-              <MaterialIcons name="share" size={20} color={accent} />
-              <Text style={[styles.actionLabel, { color: textPrimary }]}>Compartilhar progresso</Text>
-              <MaterialIcons name="chevron-right" size={20} color={textMuted} />
-            </TouchableOpacity>
-            <View style={[styles.separator, { backgroundColor: borderColor }]} />
-            <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
-              <MaterialIcons name="help-outline" size={20} color="#3B82F6" />
-              <Text style={[styles.actionLabel, { color: textPrimary }]}>Ajuda e suporte</Text>
-              <MaterialIcons name="chevron-right" size={20} color={textMuted} />
-            </TouchableOpacity>
-            <View style={[styles.separator, { backgroundColor: borderColor }]} />
-            <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
-              <MaterialIcons name="privacy-tip" size={20} color={textMuted} />
-              <Text style={[styles.actionLabel, { color: textPrimary }]}>Privacidade e termos</Text>
-              <MaterialIcons name="chevron-right" size={20} color={textMuted} />
-            </TouchableOpacity>
-            <View style={[styles.separator, { backgroundColor: borderColor }]} />
-            <TouchableOpacity
-              style={styles.actionRow}
-              activeOpacity={0.7}
-              onPress={() => Alert.alert("Sair", "Tem certeza que deseja sair?", [
-                { text: "Cancelar", style: "cancel" },
-                { text: "Sair", style: "destructive" },
-              ])}
-            >
-              <MaterialIcons name="logout" size={20} color="#EF4444" />
-              <Text style={[styles.actionLabel, { color: "#EF4444" }]}>Sair da conta</Text>
-              <MaterialIcons name="chevron-right" size={20} color={textMuted} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Save Button */}
-        <TouchableOpacity style={[styles.saveButton, { backgroundColor: accent }]} onPress={handleSave} activeOpacity={0.85}>
-          <Text style={styles.saveButtonText}>SALVAR ALTERAÇÕES</Text>
+        <TouchableOpacity style={styles.logoutBtn}>
+          <Text style={styles.logoutText}>Sair da Conta</Text>
         </TouchableOpacity>
 
-        <View style={{ height: 32 }} />
+        <View style={{ height: 40 }} />
       </ScrollView>
     </ScreenContainer>
   );
@@ -462,276 +252,261 @@ export default function PerfilScreen() {
 
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
-  content: { paddingBottom: 40 },
-
+  content: { padding: 20 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 16,
+    marginBottom: 32,
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: "#111111",
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#1A1A1A",
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "700",
-    lineHeight: 24,
+    fontWeight: "900",
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
   },
-  saveBtn: {
+  saveHeaderBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    backgroundColor: "transparent",
+    borderRadius: 12,
+    backgroundColor: "rgba(34,197,94,0.1)",
   },
-  saveBtnText: {
-    fontSize: 13,
+  saveHeaderText: {
+    fontSize: 14,
     fontWeight: "700",
-    lineHeight: 18,
+    color: "#22C55E",
   },
-
-  photoSection: {
+  profileSection: {
     alignItems: "center",
-    paddingVertical: 20,
-    gap: 10,
+    marginBottom: 40,
   },
-  photoWrapper: {
-    position: "relative",
-    width: 110,
-    height: 110,
-  },
-  photo: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 3,
-  },
-  photoPlaceholder: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 2,
+  photoContainer: {
+    width: 120,
+    height: 120,
+    marginBottom: 20,
     alignItems: "center",
     justifyContent: "center",
   },
-  photoBadge: {
+  photoGlow: {
     position: "absolute",
-    bottom: 4,
-    right: 4,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    opacity: 0.3,
+  },
+  photoInner: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: "#111111",
+    borderWidth: 3,
+    borderColor: "#050505",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  nameText: {
-    fontSize: 22,
-    fontWeight: "800",
-    lineHeight: 28,
-  },
-  nameInput: {
-    fontSize: 22,
-    fontWeight: "800",
-    borderBottomWidth: 1.5,
-    paddingBottom: 4,
-    minWidth: 120,
-    textAlign: "center",
-    lineHeight: 28,
-  },
-  memberSince: {
-    fontSize: 12,
-    lineHeight: 18,
-  },
-
-  imcCard: {
-    flexDirection: "row",
-    marginHorizontal: 20,
-    borderRadius: 16,
-    paddingVertical: 16,
-    borderWidth: 1,
-    marginBottom: 8,
-  },
-  imcItem: {
-    flex: 1,
-    alignItems: "center",
-    gap: 4,
-  },
-  imcValue: {
-    fontSize: 18,
-    fontWeight: "800",
-    lineHeight: 24,
-  },
-  imcLabel: {
-    fontSize: 11,
-    lineHeight: 16,
-  },
-  imcDivider: {
-    width: 1,
-    marginVertical: 4,
-  },
-
-  section: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    gap: 10,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    lineHeight: 18,
-  },
-  card: {
-    borderRadius: 16,
-    borderWidth: 1,
     overflow: "hidden",
   },
-  separator: {
-    height: 1,
-    marginHorizontal: 16,
+  photo: {
+    width: "100%",
+    height: "100%",
   },
-
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 12,
-  },
-  inputGroup: {
-    flex: 1,
-    gap: 2,
-  },
-  inputLabel: {
-    fontSize: 11,
-    lineHeight: 16,
-  },
-  inputField: {
-    fontSize: 15,
-    fontWeight: "600",
-    lineHeight: 22,
-    padding: 0,
-  },
-
-  objectivesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  objectiveCard: {
-    width: "30%",
-    flexGrow: 1,
+  photoPlaceholder: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    borderRadius: 14,
-    borderWidth: 1.5,
   },
-  objectiveLabel: {
-    fontSize: 11,
-    fontWeight: "600",
+  editBadge: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#22C55E",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
+    borderColor: "#050505",
+  },
+  nameInput: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#FFFFFF",
+    letterSpacing: -1,
     textAlign: "center",
-    lineHeight: 16,
   },
-
-  activityRow: {
+  statusText: {
+    fontSize: 13,
+    color: "#22C55E",
+    fontWeight: "700",
+    marginTop: 4,
+    letterSpacing: 0.5,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#6B7280",
+    letterSpacing: 2,
+    marginBottom: 16,
+  },
+  evolutionBanner: {
+    borderRadius: 24,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(34,197,94,0.1)",
+  },
+  evolutionGradient: {
+    padding: 20,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
     justifyContent: "space-between",
   },
-  activityInfo: { gap: 2 },
-  activityLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 20,
+  evolutionInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
   },
-  activityDesc: {
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  radioOuter: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
+  evolutionIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: "rgba(34,197,94,0.15)",
     alignItems: "center",
     justifyContent: "center",
   },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-
-  toggleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  toggleInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    flex: 1,
-  },
-  toggleLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 20,
-  },
-  toggleDesc: {
-    fontSize: 11,
-    lineHeight: 16,
-  },
-
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    gap: 12,
-  },
-  actionLabel: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "500",
-    lineHeight: 20,
-  },
-
-  saveButton: {
-    marginHorizontal: 20,
-    marginTop: 24,
-    borderRadius: 30,
-    paddingVertical: 16,
-    alignItems: "center",
-  },
-  saveButtonText: {
-    fontSize: 14,
+  evolutionTitle: {
+    fontSize: 17,
     fontWeight: "800",
     color: "#FFFFFF",
+  },
+  evolutionSub: {
+    fontSize: 13,
+    color: "#9CA3AF",
+    marginTop: 2,
+  },
+  evolutionAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  evolutionActionText: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#22C55E",
+  },
+  metricsGrid: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  metricCard: {
+    flex: 1,
+    backgroundColor: "#111111",
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#1A1A1A",
+  },
+  metricLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#6B7280",
     letterSpacing: 1,
-    lineHeight: 20,
+    marginBottom: 8,
+  },
+  metricInputRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 4,
+  },
+  metricInput: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#FFFFFF",
+    padding: 0,
+  },
+  metricUnit: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#6B7280",
+  },
+  objectivesGrid: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  objectiveCard: {
+    flex: 1,
+    backgroundColor: "#111111",
+    borderRadius: 18,
+    padding: 16,
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "#1A1A1A",
+  },
+  objectiveCardActive: {
+    backgroundColor: "#22C55E",
+    borderColor: "#22C55E",
+  },
+  objectiveText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#D1D5DB",
+    textAlign: "center",
+  },
+  objectiveTextActive: {
+    color: "#000000",
+  },
+  settingsCard: {
+    backgroundColor: "#111111",
+    borderRadius: 24,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: "#1A1A1A",
+  },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+  },
+  settingInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  settingLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#1A1A1A",
+    marginHorizontal: 16,
+  },
+  logoutBtn: {
+    marginTop: 20,
+    height: 56,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.2)",
+  },
+  logoutText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#EF4444",
   },
 });

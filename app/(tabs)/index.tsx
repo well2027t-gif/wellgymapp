@@ -6,638 +6,483 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  Dimensions,
 } from "react-native";
 import { Image, ImageBackground } from "expo-image";
 import { useRouter } from "expo-router";
 import type { Href } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
+import { MaterialIcons, Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { ScreenContainer } from "@/components/screen-container";
 import { CircularProgress } from "@/components/circular-progress";
 import { WORKOUTS, WEEK_DAYS, STATS, DEFAULT_GOAL, type Goal } from "@/lib/data";
+import { LinearGradient } from "expo-linear-gradient";
 
-const GYM_BG = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=60";
-const MOTIVATION_BG = "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=60";
-
-const OBJECTIVES_LABEL: Record<string, string> = {
-  perder: "Emagrecimento",
-  massa: "Ganhar Massa",
-  definicao: "Definição",
-  manutencao: "Manutenção",
-  saude: "Saúde Geral",
-  performance: "Performance",
-};
+const { width } = Dimensions.get("window");
+const GYM_BG = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80";
 
 export default function HomeScreen() {
   const router = useRouter();
   const todayWorkout = WORKOUTS[0];
   const today = new Date();
   const dayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1;
-  const goal: Goal & { objective?: string } = DEFAULT_GOAL;
+  const goal: Goal = DEFAULT_GOAL;
 
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
 
   const weightProgress = Math.max(
     0,
-    Math.min(
-      (goal.startWeight - goal.currentWeight) /
-        (goal.startWeight - goal.goalWeight),
-      1
-    )
+    Math.min((goal.startWeight - goal.currentWeight) / (goal.startWeight - goal.goalWeight), 1)
   );
 
-  const handlePickPhoto = async () => {
-    if (Platform.OS === "web") return;
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setProfilePhoto(result.assets[0].uri);
-    }
-  };
-
   return (
-    <ScreenContainer containerClassName="bg-background" safeAreaClassName="bg-background">
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
+    <ScreenContainer containerClassName="bg-[#050505]" safeAreaClassName="bg-[#050505]">
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
+        {/* Header Premium */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Bom dia 👋</Text>
-            <Text style={styles.userName}>Atleta</Text>
+            <Text style={styles.greeting}>BOM DIA,</Text>
+            <Text style={styles.userName}>Atleta <Text style={styles.userDot}>•</Text></Text>
           </View>
           <TouchableOpacity
-            style={styles.avatar}
+            style={styles.avatarContainer}
             onPress={() => router.push("/perfil" as Href)}
             activeOpacity={0.8}
           >
-            {profilePhoto ? (
-              <Image source={{ uri: profilePhoto }} style={styles.avatarImg} />
-            ) : (
-              <MaterialIcons name="person" size={24} color="#22C55E" />
-            )}
+            <LinearGradient colors={["#22C55E", "#16A34A"]} style={styles.avatarGlow} />
+            <View style={styles.avatarInner}>
+              {profilePhoto ? (
+                <Image source={{ uri: profilePhoto }} style={styles.avatarImg} />
+              ) : (
+                <Ionicons name="person" size={20} color="#22C55E" />
+              )}
+            </View>
           </TouchableOpacity>
         </View>
 
-        {/* Today's Workout Card */}
+        {/* Today's Workout Card - Design Elite */}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => router.push(`/workout/${todayWorkout.id}` as Href)}
           style={styles.workoutCard}
         >
-          <ImageBackground
-            source={{ uri: GYM_BG }}
-            style={styles.workoutBg}
-            imageStyle={styles.workoutBgImage}
-            transition={200}
-            cachePolicy="memory-disk"
-          >
-            <View style={styles.workoutOverlay}>
-              <Text style={styles.todayLabel}>TREINO DE HOJE</Text>
-              <Text style={styles.workoutName}>{todayWorkout.name}</Text>
-              <View style={styles.workoutMeta}>
-                <View style={styles.metaItem}>
-                  <MaterialIcons name="access-time" size={14} color="#9CA3AF" />
-                  <Text style={styles.metaText}>{todayWorkout.duration} min</Text>
+          <ImageBackground source={{ uri: GYM_BG }} style={styles.workoutBg} imageStyle={styles.workoutBgImage}>
+            <LinearGradient
+              colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.95)"]}
+              style={styles.workoutOverlay}
+            >
+              <View style={styles.workoutHeader}>
+                <View style={styles.liveBadge}>
+                  <View style={styles.liveDot} />
+                  <Text style={styles.liveText}>HOJE</Text>
                 </View>
-                <View style={styles.metaItem}>
-                  <MaterialIcons name="local-fire-department" size={14} color="#F97316" />
-                  <Text style={styles.metaText}>{todayWorkout.calories} kcal</Text>
+                <Text style={styles.workoutDuration}>{todayWorkout.duration} min</Text>
+              </View>
+              
+              <View style={styles.workoutMain}>
+                <Text style={styles.workoutName}>{todayWorkout.name.toUpperCase()}</Text>
+                <View style={styles.workoutMeta}>
+                  <View style={styles.metaItem}>
+                    <FontAwesome5 name="fire-alt" size={14} color="#F97316" />
+                    <Text style={styles.metaText}>{todayWorkout.calories} kcal</Text>
+                  </View>
+                  <View style={styles.metaDivider} />
+                  <View style={styles.metaItem}>
+                    <Ionicons name="fitness-outline" size={16} color="#22C55E" />
+                    <Text style={styles.metaText}>6 exercícios</Text>
+                  </View>
                 </View>
               </View>
+
               <TouchableOpacity
                 style={styles.startButton}
                 activeOpacity={0.85}
                 onPress={() => router.push(`/workout/${todayWorkout.id}` as Href)}
               >
-                <Text style={styles.startButtonText}>COMEÇAR TREINO</Text>
+                <LinearGradient colors={["#22C55E", "#16A34A"]} style={styles.startGradient}>
+                  <Text style={styles.startButtonText}>INICIAR TREINO</Text>
+                  <Ionicons name="play-circle" size={20} color="#000000" />
+                </LinearGradient>
               </TouchableOpacity>
-            </View>
+            </LinearGradient>
           </ImageBackground>
         </TouchableOpacity>
 
-        {/* Week Days */}
+        {/* Week Days - Minimalist */}
         <View style={styles.weekRow}>
           {WEEK_DAYS.map((day, index) => {
-            const workout = WORKOUTS.find((w) => w.dayLabel === day);
             const isToday = index === dayIndex;
-            const hasWorkout = !!workout;
             return (
-              <TouchableOpacity
-                key={day}
-                style={[styles.dayItem, isToday && styles.dayItemActive]}
-                activeOpacity={0.7}
-                onPress={() => workout && router.push(`/workout/${workout.id}` as Href)}
-              >
+              <View key={day} style={styles.dayContainer}>
                 <Text style={[styles.dayText, isToday && styles.dayTextActive]}>{day}</Text>
-                <View
-                  style={[
-                    styles.dayDot,
-                    hasWorkout ? styles.dayDotActive : styles.dayDotEmpty,
-                    isToday && styles.dayDotToday,
-                  ]}
-                />
-              </TouchableOpacity>
+                <View style={[styles.dayDot, isToday && styles.dayDotActive]} />
+              </View>
             );
           })}
         </View>
 
-        {/* Stats Circles */}
-        <View style={styles.statsCard}>
-          <CircularProgress
-            value={STATS.caloriesToday}
-            maxValue={800}
-            size={104}
-            strokeWidth={8}
-            color="#22C55E"
-            label="Calorias"
-          />
-          <CircularProgress
-            value={STATS.minutesToday}
-            maxValue={90}
-            size={104}
-            strokeWidth={8}
-            color="#3B82F6"
-            label="Tempo"
-            unit="m"
-          />
-          <CircularProgress
-            value={STATS.workoutsThisWeek}
-            maxValue={STATS.totalWorkouts}
-            size={104}
-            strokeWidth={8}
-            color="#A855F7"
-            label="Treinos"
-          />
-        </View>
-
-        {/* Motivation Card */}
-        <View style={styles.motivationCard}>
-          <ImageBackground
-            source={{ uri: MOTIVATION_BG }}
-            style={styles.motivationBg}
-            imageStyle={styles.motivationBgImage}
-            transition={200}
-            cachePolicy="memory-disk"
-          >
-            <View style={styles.motivationOverlay}>
-              <View style={styles.motivationRow}>
-                <MaterialIcons name="local-fire-department" size={28} color="#F97316" />
-                <Text style={styles.motivationText}>
-                  Você está melhor que{" "}
-                  <Text style={styles.motivationPercent}>{STATS.betterThanPercent}%</Text>
-                </Text>
-              </View>
-              <Text style={styles.motivationSub}>
-                + {STATS.weeklyImprovement}% esta semana
-              </Text>
-            </View>
-          </ImageBackground>
-        </View>
-
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
-          {/* Left: Photo */}
-          <TouchableOpacity
-            style={styles.profilePhotoContainer}
-            onPress={() => router.push("/perfil" as Href)}
-            activeOpacity={0.8}
-          >
-            {profilePhoto ? (
-              <Image source={{ uri: profilePhoto }} style={styles.profilePhoto} />
-            ) : (
-              <View style={styles.profilePhotoPlaceholder}>
-                <MaterialIcons name="add-a-photo" size={28} color="#22C55E" />
-                <Text style={styles.profilePhotoHint}>Adicionar{"\n"}foto</Text>
-              </View>
-            )}
-            {/* Progress ring overlay */}
-            <View style={styles.profilePhotoRing} />
-          </TouchableOpacity>
-
-          {/* Right: Stats */}
-          <View style={styles.profileStats}>
-            {/* Name & goal */}
-            <View style={styles.profileNameRow}>
-              <Text style={styles.profileName}>Atleta</Text>
-              <View style={styles.goalBadge}>
-                <MaterialIcons name="flag" size={11} color="#22C55E" />
-                <Text style={styles.goalBadgeText}>
-                  {OBJECTIVES_LABEL[(goal as any).objective ?? 'perder'] ?? "Emagrecimento"}
-                </Text>
+        {/* Stats Grid - Glassmorphism */}
+        <View style={styles.statsGrid}>
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <CircularProgress value={STATS.caloriesToday} maxValue={800} size={80} strokeWidth={6} color="#22C55E" label="" />
+              <View style={styles.statInfo}>
+                <Text style={styles.statValue}>{STATS.caloriesToday}</Text>
+                <Text style={styles.statLabel}>KCAL</Text>
               </View>
             </View>
-
-            {/* Weight row */}
-            <View style={styles.weightRow}>
-              <View style={styles.weightItem}>
-                <Text style={styles.weightValue}>{goal.currentWeight}</Text>
-                <Text style={styles.weightUnit}>kg atual</Text>
+            <View style={styles.statCard}>
+              <CircularProgress value={STATS.minutesToday} maxValue={90} size={80} strokeWidth={6} color="#3B82F6" label="" />
+              <View style={styles.statInfo}>
+                <Text style={styles.statValue}>{STATS.minutesToday}</Text>
+                <Text style={styles.statLabel}>MIN</Text>
               </View>
-              <View style={styles.weightDivider} />
-              <View style={styles.weightItem}>
-                <Text style={[styles.weightValue, { color: "#22C55E" }]}>{goal.goalWeight}</Text>
-                <Text style={styles.weightUnit}>kg meta</Text>
-              </View>
-              <View style={styles.weightDivider} />
-              <View style={styles.weightItem}>
-                <Text style={[styles.weightValue, { color: "#3B82F6" }]}>
-                  {(goal.startWeight - goal.currentWeight).toFixed(1)}
-                </Text>
-                <Text style={styles.weightUnit}>kg perdidos</Text>
-              </View>
-            </View>
-
-            {/* Progress bar */}
-            <View style={styles.progressSection}>
-              <View style={styles.progressHeader}>
-                <Text style={styles.progressLabel}>Progresso da meta</Text>
-                <Text style={styles.progressPercent}>
-                  {Math.round(weightProgress * 100)}%
-                </Text>
-              </View>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    { width: `${Math.round(weightProgress * 100)}%` as any },
-                  ]}
-                />
-              </View>
-              <Text style={styles.progressSub}>
-                Faltam {(goal.currentWeight - goal.goalWeight).toFixed(1)} kg para a meta
-              </Text>
             </View>
           </View>
         </View>
 
+        {/* Profile Card - Luxury Style */}
+        <TouchableOpacity 
+          style={styles.profileCard} 
+          activeOpacity={0.9}
+          onPress={() => router.push("/perfil" as Href)}
+        >
+          <LinearGradient colors={["#111111", "#080808"]} style={styles.profileGradient}>
+            <View style={styles.profileHeader}>
+              <View style={styles.profilePhotoBox}>
+                <Image source={{ uri: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=200&q=80" }} style={styles.profilePhoto} />
+              </View>
+              <View style={styles.profileMainInfo}>
+                <Text style={styles.profileName}>Atleta</Text>
+                <View style={styles.profileBadge}>
+                  <Text style={styles.profileBadgeText}>EMAGRECIMENTO</Text>
+                </View>
+              </View>
+              <View style={styles.weightBox}>
+                <Text style={styles.weightValue}>{goal.currentWeight}</Text>
+                <Text style={styles.weightLabel}>KG</Text>
+              </View>
+            </View>
+            
+            <View style={styles.progressContainer}>
+              <View style={styles.progressHeader}>
+                <Text style={styles.progressLabel}>Progresso da Meta</Text>
+                <Text style={styles.progressPercent}>{Math.round(weightProgress * 100)}%</Text>
+              </View>
+              <View style={styles.progressBar}>
+                <LinearGradient
+                  colors={["#22C55E", "#16A34A"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={[styles.progressFill, { width: `${Math.round(weightProgress * 100)}%` as any }]}
+                />
+              </View>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
 
+        <View style={{ height: 40 }} />
       </ScrollView>
     </ScreenContainer>
   );
 }
 
-
-
 const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-    backgroundColor: "#0D0D0D",
-  },
-  scrollContent: {
-    paddingBottom: 32,
-    gap: 14,
-  },
+  scroll: { flex: 1 },
+  scrollContent: { padding: 20 },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 4,
+    justifyContent: "space-between",
+    marginBottom: 32,
+    marginTop: 10,
   },
   greeting: {
-    fontSize: 14,
-    color: "#9CA3AF",
-    lineHeight: 20,
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#6B7280",
+    letterSpacing: 2,
   },
   userName: {
-    fontSize: 22,
-    fontWeight: "700",
+    fontSize: 28,
+    fontWeight: "900",
     color: "#FFFFFF",
-    lineHeight: 28,
+    letterSpacing: -1,
   },
-  avatar: {
+  userDot: {
+    color: "#22C55E",
+  },
+  avatarContainer: {
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarGlow: {
+    position: "absolute",
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    opacity: 0.2,
+  },
+  avatarInner: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: "#111111",
     borderWidth: 1.5,
-    borderColor: "#22C55E",
+    borderColor: "#1A1A1A",
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
   },
-  avatarImg: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-  },
+  avatarImg: { width: "100%", height: "100%" },
   workoutCard: {
-    marginHorizontal: 20,
-    borderRadius: 20,
+    height: 440,
+    borderRadius: 32,
     overflow: "hidden",
+    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: "#1A1A1A",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.4,
+    shadowRadius: 30,
   },
-  workoutBg: {
-    width: "100%",
-    minHeight: 220,
-  },
-  workoutBgImage: {
-    borderRadius: 20,
-  },
+  workoutBg: { flex: 1 },
+  workoutBgImage: { opacity: 0.8 },
   workoutOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    padding: 20,
-    paddingBottom: 20,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(34,197,94,0.25)",
+    padding: 24,
+    justifyContent: "space-between",
   },
-  todayLabel: {
+  workoutHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  liveBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 6,
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#22C55E",
+  },
+  liveText: {
     fontSize: 11,
+    fontWeight: "900",
+    color: "#FFFFFF",
+  },
+  workoutDuration: {
+    fontSize: 13,
     fontWeight: "700",
-    color: "#22C55E",
-    letterSpacing: 1.5,
-    marginBottom: 6,
-    lineHeight: 16,
+    color: "rgba(255,255,255,0.6)",
+  },
+  workoutMain: {
+    marginBottom: 20,
   },
   workoutName: {
-    fontSize: 26,
-    fontWeight: "800",
+    fontSize: 42,
+    fontWeight: "900",
     color: "#FFFFFF",
-    marginBottom: 10,
-    lineHeight: 32,
+    lineHeight: 44,
+    letterSpacing: -1.5,
   },
   workoutMeta: {
     flexDirection: "row",
-    gap: 16,
-    marginBottom: 20,
+    alignItems: "center",
+    marginTop: 12,
+    gap: 12,
   },
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 6,
   },
   metaText: {
-    fontSize: 13,
+    fontSize: 14,
+    fontWeight: "700",
     color: "#D1D5DB",
-    lineHeight: 18,
+  },
+  metaDivider: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(255,255,255,0.2)",
   },
   startButton: {
-    backgroundColor: "#22C55E",
-    borderRadius: 30,
-    paddingVertical: 14,
+    height: 64,
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+  startGradient: {
+    flex: 1,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
   },
   startButtonText: {
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: 16,
+    fontWeight: "900",
     color: "#000000",
     letterSpacing: 1,
-    lineHeight: 20,
   },
   weekRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    marginBottom: 32,
+    paddingHorizontal: 4,
   },
-  dayItem: {
+  dayContainer: {
     alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    borderRadius: 12,
-    gap: 6,
-  },
-  dayItemActive: {
-    backgroundColor: "rgba(34,197,94,0.12)",
+    gap: 8,
   },
   dayText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#6B7280",
-    lineHeight: 16,
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#4B5563",
   },
   dayTextActive: {
-    color: "#22C55E",
+    color: "#FFFFFF",
   },
   dayDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "transparent",
   },
   dayDotActive: {
     backgroundColor: "#22C55E",
+    width: 12,
+    height: 4,
+    borderRadius: 2,
   },
-  dayDotEmpty: {
-    backgroundColor: "#374151",
+  statsGrid: {
+    marginBottom: 32,
   },
-  dayDotToday: {
-    backgroundColor: "#22C55E",
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  statsCard: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    marginHorizontal: 20,
-    backgroundColor: "#1A1A1A",
-    borderRadius: 20,
-    paddingVertical: 20,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-  },
-  motivationCard: {
-    marginHorizontal: 20,
-    borderRadius: 20,
-    overflow: "hidden",
-  },
-  motivationBg: {
-    width: "100%",
-  },
-  motivationBgImage: {
-    borderRadius: 20,
-    opacity: 0.4,
-  },
-  motivationOverlay: {
-    backgroundColor: "rgba(0,0,0,0.6)",
-    padding: 20,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-  },
-  motivationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 6,
-  },
-  motivationText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    lineHeight: 22,
-  },
-  motivationPercent: {
-    color: "#22C55E",
-    fontWeight: "800",
-  },
-  motivationSub: {
-    fontSize: 13,
-    color: "#22C55E",
-    fontWeight: "600",
-    marginLeft: 38,
-    lineHeight: 18,
-  },
-
-  // ─── Profile Card ───────────────────────────────────────────────
-  profileCard: {
-    marginHorizontal: 20,
-    backgroundColor: "#1A1A1A",
-    borderRadius: 20,
-    padding: 16,
+  statsRow: {
     flexDirection: "row",
     gap: 16,
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    alignItems: "flex-start",
   },
-  profilePhotoContainer: {
-    position: "relative",
-    width: 120,
-    height: 130,
-  },
-  profilePhoto: {
-    width: 120,
-    height: 130,
-    borderRadius: 18,
-    borderWidth: 2.5,
-    borderColor: "#22C55E",
-  },
-  profilePhotoPlaceholder: {
-    width: 120,
-    height: 130,
-    borderRadius: 18,
-    backgroundColor: "#0D0D0D",
-    borderWidth: 2,
-    borderColor: "#2A2A2A",
-    borderStyle: "dashed",
+  statCard: {
+    flex: 1,
+    height: 120,
+    backgroundColor: "#111111",
+    borderRadius: 24,
+    padding: 16,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: "#1A1A1A",
   },
-  profilePhotoHint: {
+  statInfo: {
+    alignItems: "center",
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: "900",
+    color: "#FFFFFF",
+  },
+  statLabel: {
     fontSize: 10,
+    fontWeight: "800",
     color: "#6B7280",
-    textAlign: "center",
-    lineHeight: 14,
+    letterSpacing: 1,
   },
-  profilePhotoRing: {
-    position: "absolute",
-    top: -3,
-    left: -3,
-    right: -3,
-    bottom: -3,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "rgba(34,197,94,0.2)",
+  profileCard: {
+    borderRadius: 32,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#1A1A1A",
   },
-  profileStats: {
-    flex: 1,
-    gap: 10,
+  profileGradient: {
+    padding: 24,
   },
-  profileNameRow: {
+  profileHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
+    marginBottom: 24,
+  },
+  profilePhotoBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#22C55E",
+  },
+  profilePhoto: { width: "100%", height: "100%" },
+  profileMainInfo: {
+    flex: 1,
+    marginLeft: 16,
   },
   profileName: {
-    fontSize: 17,
-    fontWeight: "800",
+    fontSize: 20,
+    fontWeight: "900",
     color: "#FFFFFF",
-    lineHeight: 22,
   },
-  goalBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
+  profileBadge: {
     backgroundColor: "rgba(34,197,94,0.1)",
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(34,197,94,0.25)",
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+    marginTop: 4,
   },
-  goalBadgeText: {
+  profileBadgeText: {
     fontSize: 10,
-    fontWeight: "700",
+    fontWeight: "900",
     color: "#22C55E",
-    lineHeight: 14,
   },
-  weightRow: {
-    flexDirection: "row",
+  weightBox: {
     alignItems: "center",
-    gap: 8,
-  },
-  weightItem: {
-    flex: 1,
-    alignItems: "center",
-    gap: 1,
   },
   weightValue: {
-    fontSize: 18,
-    fontWeight: "800",
+    fontSize: 24,
+    fontWeight: "900",
     color: "#FFFFFF",
-    lineHeight: 24,
   },
-  weightUnit: {
+  weightLabel: {
     fontSize: 10,
+    fontWeight: "800",
     color: "#6B7280",
-    lineHeight: 14,
-    textAlign: "center",
   },
-  weightDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: "#2A2A2A",
-  },
-  progressSection: {
-    gap: 5,
+  progressContainer: {
+    gap: 12,
   },
   progressHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
   },
   progressLabel: {
-    fontSize: 11,
-    color: "#9CA3AF",
-    lineHeight: 16,
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#D1D5DB",
   },
   progressPercent: {
     fontSize: 13,
-    fontWeight: "800",
+    fontWeight: "900",
     color: "#22C55E",
-    lineHeight: 18,
   },
   progressBar: {
-    height: 6,
-    backgroundColor: "#2A2A2A",
-    borderRadius: 3,
+    height: 8,
+    backgroundColor: "#1A1A1A",
+    borderRadius: 4,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#22C55E",
-    borderRadius: 3,
+    borderRadius: 4,
   },
-  progressSub: {
-    fontSize: 10,
-    color: "#6B7280",
-    lineHeight: 14,
-  },
-
-
 });
