@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Forçar visualização mobile no navegador */
+/* FORÇAR VISUALIZAÇÃO MOBILE NO NAVEGADOR */
 @media (min-width: 481px) {
   html, body {
     background-color: #000000 !important;
@@ -16,21 +16,23 @@
     overflow: hidden !important;
   }
 
-  #root, .expo-router-root {
-    max-width: 430px !important; /* Largura média de um iPhone Max */
+  #root, .expo-router-root, [data-expo-router-root] {
+    max-width: 430px !important; /* Largura iPhone Pro Max */
     width: 100% !important;
-    height: 92vh !important; /* Deixar um pouco de espaço no topo/base */
-    max-height: 850px !important;
+    height: 95vh !important;
+    max-height: 880px !important;
     position: relative !important;
-    box-shadow: 0 0 60px rgba(0, 0, 0, 0.9) !important;
-    border: 8px solid #1A1A1A !important; /* Simular carcaça do celular */
-    border-radius: 40px !important;
+    margin: 0 auto !important;
+    box-shadow: 0 0 100px rgba(0, 0, 0, 1) !important;
+    border: 10px solid #111111 !important; /* Moldura de Celular */
+    border-radius: 45px !important;
     overflow: hidden !important;
     background-color: #050505 !important;
+    display: block !important;
   }
 }
 
-/* Esconder barras de rolagem para manter o visual de app */
+/* Esconder barras de rolagem para manter o visual de app nativo */
 ::-webkit-scrollbar {
   display: none;
 }
